@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 使用较新的稳定版 Node
+          node-version: '22'
 
       # 3. 安装依赖并打包项目
       - name: Install and Build
