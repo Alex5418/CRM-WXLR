@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import type { Project, Customer, ProgressLog, Contract } from '@/types'
 import { STAGES, STAGE_ORDER, STAGE_COLORS, BIZ_TYPES, LICENSE_TYPES } from '@/types'
-import { getProject, updateProjectStage } from '@/api/projects'
+import { getProject } from '@/api/projects'
 import { getCustomer } from '@/api/customers'
 import { getProjectLogs, createLog } from '@/api/progress-logs'
 import { getProjectContracts } from '@/api/contracts'
@@ -34,20 +34,6 @@ export default function ProjectDetail() {
   }
 
   useEffect(() => { load() }, [id])
-
-  const handleStageChange = async (stage: typeof STAGE_ORDER[number]) => {
-    if (!id || !project) return
-    const updated = await updateProjectStage(id, stage)
-    setProject(updated)
-    await createLog({
-      project_id: id,
-      customer_id: project.customer_id,
-      staff_id: 's1',
-      content: `项目阶段变更: ${STAGES[project.stage]} → ${STAGES[stage]}`,
-      stage_snapshot: stage,
-    })
-    getProjectLogs(id).then(setLogs)
-  }
 
   const handleAddLog = async () => {
     if (!newLog.trim() || !id || !project) return
@@ -89,19 +75,18 @@ export default function ProjectDetail() {
         <CardContent className="p-4">
           <div className="flex items-center gap-1 overflow-x-auto">
             {STAGE_ORDER.map((stage, idx) => (
-              <button
+              <div
                 key={stage}
-                onClick={() => handleStageChange(stage)}
-                className={`flex-1 min-w-0 py-2 px-1 text-center text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                className={`flex-1 min-w-0 py-2 px-1 text-center text-xs font-medium rounded-md ${
                   idx <= currentStageIdx
                     ? 'text-white'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    : 'bg-muted text-muted-foreground'
                 }`}
                 style={idx <= currentStageIdx ? { backgroundColor: STAGE_COLORS[project.stage] } : undefined}
               >
                 <span className="hidden sm:inline">{STAGES[stage]}</span>
                 <span className="sm:hidden">{STAGES[stage].slice(0, 2)}</span>
-              </button>
+              </div>
             ))}
           </div>
         </CardContent>
