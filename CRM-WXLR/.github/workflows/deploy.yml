@@ -1,0 +1,46 @@
+name: Deploy to Tencent CloudBase
+
+# 触发条件：当代码推送到 main 分支时执行
+on:
+  push:
+    branches:
+      - main  # 如果你的默认分支是 master，请把这里改成 master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取你的最新代码
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 使用较新的稳定版 Node
+
+      # 3. 安装依赖并打包项目
+      - name: Install and Build
+        working-directory: ./web # 指定在 web 目录下执行
+        run: |
+          npm install
+          npm run build
+
+      # 4. 安装云开发 CLI
+      - name: Install CloudBase CLI
+        run: npm i -g @cloudbase/cli
+
+      # 5. 登录并部署到静态托管
+      - name: Deploy to CloudBase
+        working-directory: ./web
+        env:
+          SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+          ENV_ID: my-test-env-0gif1eyrbc6d63e1
+        run: |
+          # 使用密钥进行静默登录
+          tcb login --apiKeyId $SECRET_ID --apiKey $SECRET_KEY
+          # 部署 dist 目录到云端
+          tcb hosting deploy dist -e $ENV_ID
