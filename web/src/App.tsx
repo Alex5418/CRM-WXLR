@@ -11,7 +11,7 @@ import ContractList from '@/pages/ContractList'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
@@ -26,6 +26,6 @@ export default function App() {
           <Route path="/contracts" element={<ContractList />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
