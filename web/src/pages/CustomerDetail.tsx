@@ -3,27 +3,52 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { Customer, Project, ProgressLog } from '@/types'
+import { Input } from '@/components/ui/input'
+import type { Customer, Project, ProgressLog, LabelOrder } from '@/types'
 import { CUSTOMER_STATUSES, STAGES, BIZ_TYPES, STAGE_COLORS } from '@/types'
 import { getCustomer } from '@/api/customers'
 import { getProjects } from '@/api/projects'
 import { getCustomerLogs } from '@/api/progress-logs'
+import { getCustomerLabelOrders, createLabelOrder } from '@/api/label-orders'
 import { getStaffName } from '@/api/staff'
-import { formatDateTime } from '@/lib/utils'
-import { ArrowLeft, Edit, FolderKanban } from 'lucide-react'
+import { formatDate, formatDateTime } from '@/lib/utils'
+import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus } from 'lucide-react'
 
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [logs, setLogs] = useState<ProgressLog[]>([])
+  const [labelOrders, setLabelOrders] = useState<LabelOrder[]>([])
+  const [showLabelForm, setShowLabelForm] = useState(false)
+  const [labelForm, setLabelForm] = useState({ unit_price: '', quantity: '', order_date: '', notes: '' })
+
+  const loadLabelOrders = () => {
+    if (id) getCustomerLabelOrders(id).then(setLabelOrders)
+  }
 
   useEffect(() => {
     if (!id) return
     getCustomer(id).then(c => setCustomer(c ?? null))
     getProjects({ customer_id: id }).then(setProjects)
     getCustomerLogs(id).then(setLogs)
+    loadLabelOrders()
   }, [id])
+
+  const handleAddLabelOrder = async () => {
+    if (!id || !labelForm.unit_price || !labelForm.quantity || !labelForm.order_date) return
+    await createLabelOrder({
+      customer_id: id,
+      unit_price: parseFloat(labelForm.unit_price),
+      quantity: parseInt(labelForm.quantity),
+      order_date: labelForm.order_date,
+      staff_id: 's1',
+      notes: labelForm.notes || undefined,
+    })
+    setLabelForm({ unit_price: '', quantity: '', order_date: '', notes: '' })
+    setShowLabelForm(false)
+    loadLabelOrders()
+  }
 
   if (!customer) return <p className="text-center py-8 text-muted-foreground">加载中...</p>
 
@@ -113,6 +138,109 @@ export default function CustomerDetail() {
               <p className="text-sm text-muted-foreground text-center py-4">暂无关联项目</p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Label Orders */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" />防伪标购买记录 ({labelOrders.length})
+            </CardTitle>
+            <Button size="sm" variant="outline" onClick={() => setShowLabelForm(!showLabelForm)}>
+              <Plus className="h-4 w-4 mr-1" />新增订单
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showLabelForm && (
+            <div className="mb-4 p-3 bg-muted rounded-lg space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">单价（元/个）</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.50"
+                    value={labelForm.unit_price}
+                    onChange={e => setLabelForm(f => ({ ...f, unit_price: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">数量（个）</label>
+                  <Input
+                    type="number"
+                    placeholder="1000"
+                    value={labelForm.quantity}
+                    onChange={e => setLabelForm(f => ({ ...f, quantity: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">订单日期</label>
+                  <Input
+                    type="date"
+                    value={labelForm.order_date}
+                    onChange={e => setLabelForm(f => ({ ...f, order_date: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">备注</label>
+                  <Input
+                    placeholder="可选"
+                    value={labelForm.notes}
+                    onChange={e => setLabelForm(f => ({ ...f, notes: e.target.value }))}
+                  />
+                </div>
+              </div>
+              {labelForm.unit_price && labelForm.quantity && (
+                <p className="text-sm font-medium">
+                  总金额: ¥{(parseFloat(labelForm.unit_price || '0') * parseInt(labelForm.quantity || '0')).toFixed(2)}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleAddLabelOrder} disabled={!labelForm.unit_price || !labelForm.quantity || !labelForm.order_date}>
+                  保存
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShowLabelForm(false); setLabelForm({ unit_price: '', quantity: '', order_date: '', notes: '' }) }}>
+                  取消
+                </Button>
+              </div>
+            </div>
+          )}
+          {labelOrders.length > 0 ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-5 gap-2 text-xs text-muted-foreground font-medium px-3 py-1">
+                <span>日期</span>
+                <span className="text-right">单价</span>
+                <span className="text-right">数量</span>
+                <span className="text-right">金额</span>
+                <span>经办人</span>
+              </div>
+              {labelOrders.map(o => (
+                <div key={o._id} className="grid grid-cols-5 gap-2 text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors">
+                  <span>{formatDate(o.order_date)}</span>
+                  <span className="text-right">¥{o.unit_price}</span>
+                  <span className="text-right">{o.quantity.toLocaleString()}</span>
+                  <span className="text-right font-medium">¥{o.total_amount.toLocaleString()}</span>
+                  <div>
+                    <span>{getStaffName(o.staff_id)}</span>
+                    {o.notes && <p className="text-xs text-muted-foreground">{o.notes}</p>}
+                  </div>
+                </div>
+              ))}
+              <div className="border-t pt-2 px-3 flex justify-between text-sm font-medium">
+                <span>合计</span>
+                <span>
+                  {labelOrders.reduce((s, o) => s + o.quantity, 0).toLocaleString()} 个 / ¥{labelOrders.reduce((s, o) => s + o.total_amount, 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">暂无购买记录</p>
+          )}
         </CardContent>
       </Card>
 

@@ -1,4 +1,4 @@
-import type { Customer, Project, Staff, ProgressLog, Contract } from '@/types'
+import type { Customer, Project, Staff, ProgressLog, Contract, LabelOrder } from '@/types'
 
 // ===== Staff =====
 export const mockStaff: Staff[] = [
@@ -114,4 +114,14 @@ export const mockContracts: Contract[] = [
   { _id: 'ct2', project_id: 'p2', customer_id: 'c2', license_type: 'disney', licensed_categories: ['儿童房家具', '家居用品'], sign_date: '2025-08-01', start_date: '2025-09-01', expiry_date: '2027-08-31', royalty_rate: 10, is_active: true, remind_days: 30, created_at: '2025-08-01T08:00:00Z' },
   { _id: 'ct3', project_id: 'p5', customer_id: 'c5', license_type: 'disney', licensed_categories: ['电竞桌椅'], sign_date: '2025-10-15', start_date: '2025-11-01', expiry_date: '2027-10-31', royalty_rate: 8, contract_value: 50, is_active: true, remind_days: 30, created_at: '2025-10-15T08:00:00Z' },
   { _id: 'ct4', project_id: 'p7', customer_id: 'c7', license_type: 'disney', licensed_categories: ['床垫', '午睡枕', '床笠'], sign_date: '2025-12-01', start_date: '2026-01-01', expiry_date: '2027-12-31', royalty_rate: 8, is_active: true, remind_days: 30, created_at: '2025-12-01T08:00:00Z' },
+]
+
+// ===== Label Orders (防伪标订单) =====
+export const mockLabelOrders: LabelOrder[] = [
+  { _id: 'lo1', customer_id: 'c1', unit_price: 0.5, quantity: 2000, total_amount: 1000, order_date: '2025-08-10', staff_id: sid('王新华'), notes: '首批防伪标', created_at: '2025-08-10T08:00:00Z' },
+  { _id: 'lo2', customer_id: 'c1', unit_price: 0.5, quantity: 5000, total_amount: 2500, order_date: '2026-01-15', staff_id: sid('王新华'), created_at: '2026-01-15T08:00:00Z' },
+  { _id: 'lo3', customer_id: 'c2', unit_price: 0.45, quantity: 3000, total_amount: 1350, order_date: '2025-10-20', staff_id: sid('王新华'), created_at: '2025-10-20T08:00:00Z' },
+  { _id: 'lo4', customer_id: 'c5', unit_price: 0.6, quantity: 10000, total_amount: 6000, order_date: '2026-01-05', staff_id: sid('刘勇'), notes: '电竞椅系列防伪标', created_at: '2026-01-05T08:00:00Z' },
+  { _id: 'lo5', customer_id: 'c7', unit_price: 0.5, quantity: 4000, total_amount: 2000, order_date: '2026-02-01', staff_id: sid('张宇航'), created_at: '2026-02-01T08:00:00Z' },
+  { _id: 'lo6', customer_id: 'c5', unit_price: 0.55, quantity: 8000, total_amount: 4400, order_date: '2026-03-20', staff_id: sid('刘勇'), notes: '第二批补货', created_at: '2026-03-20T08:00:00Z' },
 ]

@@ -137,6 +137,18 @@ export interface ProgressLog {
   created_at: string
 }
 
+export interface LabelOrder {
+  _id: string
+  customer_id: string
+  unit_price: number      // 元/个
+  quantity: number         // 个
+  total_amount: number     // 元, = unit_price × quantity
+  order_date: string
+  staff_id: string
+  notes?: string
+  created_at: string
+}
+
 // ===== API Types =====
 
 export interface PaginatedResponse<T> {
