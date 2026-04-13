@@ -13,7 +13,6 @@ import { getCustomerLabelOrders, createLabelOrder } from '@/api/label-orders'
 import { getStaffName } from '@/api/staff'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus } from 'lucide-react'
-
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
   const [customer, setCustomer] = useState<Customer | null>(null)
@@ -90,6 +89,10 @@ export default function CustomerDetail() {
             <div>
               <p className="text-muted-foreground text-xs">行业</p>
               <p>{customer.industry || '-'}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">产品类别</p>
+              <p>{customer.product_categories || '-'}</p>
             </div>
             {customer.contact_phone && (
               <div>

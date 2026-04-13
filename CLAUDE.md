@@ -29,7 +29,10 @@ CRM-WXLR/
         │   ├── projects.ts
         │   ├── progress-logs.ts
         │   ├── contracts.ts
+        │   ├── label-orders.ts
         │   └── staff.ts
+        ├── context/
+        │   └── auth.tsx      # 权限上下文（AuthProvider + useAuth hook）
         ├── components/
         │   ├── Layout.tsx    # 侧边栏导航 + 响应式移动端抽屉
         │   └── ui/           # shadcn风格基础组件
@@ -42,7 +45,9 @@ CRM-WXLR/
         │   ├── ProjectDetail.tsx   # 项目详情（Pipeline + Timeline）
         │   ├── ProjectForm.tsx     # 新建/编辑项目
         │   └── ContractList.tsx    # 合同列表
-        └── lib/utils.ts     # 工具函数（cn, 日期格式化）
+        └── lib/
+            ├── utils.ts      # 工具函数（cn, 日期格式化）
+            └── permission.ts # 权限判断函数（canViewContract）
 ```
 
 ## 开发命令

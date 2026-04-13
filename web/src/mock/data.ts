@@ -110,10 +110,10 @@ export const mockProgressLogs: ProgressLog[] = [
 
 // ===== Contracts (sample) =====
 export const mockContracts: Contract[] = [
-  { _id: 'ct1', project_id: 'p1', customer_id: 'c1', license_type: 'disney', licensed_categories: ['坐姿调整器'], sign_date: '2025-06-01', start_date: '2025-07-01', expiry_date: '2027-06-30', royalty_rate: 8, is_active: true, remind_days: 30, created_at: '2025-06-01T08:00:00Z' },
-  { _id: 'ct2', project_id: 'p2', customer_id: 'c2', license_type: 'disney', licensed_categories: ['儿童房家具', '家居用品'], sign_date: '2025-08-01', start_date: '2025-09-01', expiry_date: '2027-08-31', royalty_rate: 10, is_active: true, remind_days: 30, created_at: '2025-08-01T08:00:00Z' },
-  { _id: 'ct3', project_id: 'p5', customer_id: 'c5', license_type: 'disney', licensed_categories: ['电竞桌椅'], sign_date: '2025-10-15', start_date: '2025-11-01', expiry_date: '2027-10-31', royalty_rate: 8, contract_value: 50, is_active: true, remind_days: 30, created_at: '2025-10-15T08:00:00Z' },
-  { _id: 'ct4', project_id: 'p7', customer_id: 'c7', license_type: 'disney', licensed_categories: ['床垫', '午睡枕', '床笠'], sign_date: '2025-12-01', start_date: '2026-01-01', expiry_date: '2027-12-31', royalty_rate: 8, is_active: true, remind_days: 30, created_at: '2025-12-01T08:00:00Z' },
+  { _id: 'ct1', project_id: 'p1', customer_id: 'c1', license_type: 'disney', licensed_categories: ['坐姿调整器'], sign_date: '2025-06-01', start_date: '2025-07-01', expiry_date: '2027-06-30', royalty_rate: 8, is_active: true, remind_days: 30, created_at: '2025-06-01T08:00:00Z', visible_to: ['s1'] },
+  { _id: 'ct2', project_id: 'p2', customer_id: 'c2', license_type: 'disney', licensed_categories: ['儿童房家具', '家居用品'], sign_date: '2025-08-01', start_date: '2025-09-01', expiry_date: '2027-08-31', royalty_rate: 10, is_active: true, remind_days: 30, created_at: '2025-08-01T08:00:00Z', visible_to: ['s1'] },
+  { _id: 'ct3', project_id: 'p5', customer_id: 'c5', license_type: 'disney', licensed_categories: ['电竞桌椅'], sign_date: '2025-10-15', start_date: '2025-11-01', expiry_date: '2027-10-31', royalty_rate: 8, contract_value: 50, is_active: true, remind_days: 30, created_at: '2025-10-15T08:00:00Z', visible_to: ['s1', 's3'] },
+  { _id: 'ct4', project_id: 'p7', customer_id: 'c7', license_type: 'disney', licensed_categories: ['床垫', '午睡枕', '床笠'], sign_date: '2025-12-01', start_date: '2026-01-01', expiry_date: '2027-12-31', royalty_rate: 8, is_active: true, remind_days: 30, created_at: '2025-12-01T08:00:00Z', visible_to: ['s2'] },
 ]
 
 // ===== Label Orders (防伪标订单) =====

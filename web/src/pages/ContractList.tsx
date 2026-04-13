@@ -8,10 +8,13 @@ import { getContracts } from '@/api/contracts'
 import { getCustomers } from '@/api/customers'
 import { formatDate } from '@/lib/utils'
 import { FileText, AlertTriangle } from 'lucide-react'
+import {useAuth} from '@/context/auth'
+import { canViewContract } from '@/lib/permission'
 
 export default function ContractList() {
   const [contracts, setContracts] = useState<Contract[]>([])
   const [customerMap, setCustomerMap] = useState<Record<string, Customer>>({})
+  const { currentUser } = useAuth()
 
   useEffect(() => {
     getContracts().then(setContracts)
@@ -33,9 +36,8 @@ export default function ContractList() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">合同管理</h1>
       </div>
-
       <div className="grid gap-3">
-        {contracts.map(ct => {
+        {contracts.filter(ct => canViewContract(currentUser, ct)).map(ct => {
           const customer = customerMap[ct.customer_id]
           const expiring = isExpiringSoon(ct.expiry_date)
           return (

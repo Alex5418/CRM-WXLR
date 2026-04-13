@@ -46,6 +46,7 @@ export type CustomerStatus = keyof typeof CUSTOMER_STATUSES
 export const STAFF_ROLES = {
   admin: '管理员',
   sales: '销售',
+  finance: '财务',
   manager: '经理',
 } as const
 
@@ -79,6 +80,7 @@ export interface Customer {
   region?: string
   industry?: string
   source?: string
+  product_categories?: string
   status: CustomerStatus
   created_by: string
   created_at: string
@@ -115,6 +117,7 @@ export interface Contract {
   is_active: boolean
   remind_days?: number
   created_at: string
+  visible_to?: string[] // 可见范围，数组内是 staff_id
 }
 
 export interface Staff {

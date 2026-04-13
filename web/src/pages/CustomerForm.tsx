@@ -21,6 +21,7 @@ export default function CustomerForm() {
     contact_wechat: '',
     region: '',
     industry: '',
+    product_categories: '',
     source: '',
     status: 'active' as CustomerStatus,
   })
@@ -36,6 +37,7 @@ export default function CustomerForm() {
           contact_wechat: c.contact_wechat || '',
           region: c.region || '',
           industry: c.industry || '',
+          product_categories: c.product_categories || '',
           source: c.source || '',
           status: c.status,
         })
@@ -99,6 +101,10 @@ export default function CustomerForm() {
               <div>
                 <label className="text-sm font-medium">行业</label>
                 <Input value={form.industry} onChange={e => set('industry', e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">产品类别</label>
+                <Input value={form.product_categories} onChange={e => set('product_categories', e.target.value)} placeholder='例如：毛绒玩具、家具家居等' />
               </div>
               <div>
                 <label className="text-sm font-medium">客户来源</label>
