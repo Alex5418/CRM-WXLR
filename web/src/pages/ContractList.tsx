@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { Contract, Customer } from '@/types'
 import { LICENSE_TYPES } from '@/types'
 import { getContracts } from '@/api/contracts'
 import { getCustomers } from '@/api/customers'
 import { formatDate } from '@/lib/utils'
-import { FileText, AlertTriangle } from 'lucide-react'
+import { FileText, AlertTriangle, Download } from 'lucide-react'
+import { exportContracts } from '@/lib/export'
 import {useAuth} from '@/context/auth'
 import { canViewContract } from '@/lib/permission'
 
@@ -35,6 +37,9 @@ export default function ContractList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">合同管理</h1>
+        <Button size="sm" variant="outline" onClick={() => exportContracts(contracts.filter(ct => canViewContract(currentUser, ct)), customerMap)}>
+          <Download className="h-4 w-4 mr-1" />导出
+        </Button>
       </div>
       <div className="grid gap-3">
         {contracts.filter(ct => canViewContract(currentUser, ct)).map(ct => {

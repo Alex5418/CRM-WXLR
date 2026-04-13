@@ -12,7 +12,8 @@ import { getCustomerLogs } from '@/api/progress-logs'
 import { getCustomerLabelOrders, createLabelOrder } from '@/api/label-orders'
 import { getStaffName } from '@/api/staff'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus } from 'lucide-react'
+import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus, Download } from 'lucide-react'
+import { exportLabelOrders } from '@/lib/export'
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
   const [customer, setCustomer] = useState<Customer | null>(null)
@@ -151,9 +152,16 @@ export default function CustomerDetail() {
             <CardTitle className="text-base flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />防伪标购买记录 ({labelOrders.length})
             </CardTitle>
-            <Button size="sm" variant="outline" onClick={() => setShowLabelForm(!showLabelForm)}>
-              <Plus className="h-4 w-4 mr-1" />新增订单
-            </Button>
+            <div className="flex gap-2">
+              {labelOrders.length > 0 && (
+                <Button size="sm" variant="outline" onClick={() => exportLabelOrders(labelOrders, customer.short_name || customer.company_name)}>
+                  <Download className="h-4 w-4 mr-1" />导出
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => setShowLabelForm(!showLabelForm)}>
+                <Plus className="h-4 w-4 mr-1" />新增订单
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

@@ -1,4 +1,5 @@
 import type { Customer } from '@/types'
+import { API_MODE, apiGet, apiPost, apiPut } from './client'
 import { mockCustomers } from '@/mock/data'
 
 // In-memory store for mock mutations
@@ -8,6 +9,9 @@ export async function getCustomers(params?: {
   search?: string
   status?: string
 }): Promise<Customer[]> {
+  if (API_MODE === 'rest') {
+    return apiGet<Customer[]>('/customers', params as Record<string, string>)
+  }
   let result = [...customers]
   if (params?.search) {
     const q = params.search.toLowerCase()
@@ -25,10 +29,16 @@ export async function getCustomers(params?: {
 }
 
 export async function getCustomer(id: string): Promise<Customer | undefined> {
+  if (API_MODE === 'rest') {
+    return apiGet<Customer>(`/customers/${id}`) || undefined
+  }
   return customers.find(c => c._id === id)
 }
 
 export async function createCustomer(data: Omit<Customer, '_id' | 'created_at' | 'updated_at'>): Promise<Customer> {
+  if (API_MODE === 'rest') {
+    return apiPost<Customer>('/customers', data)
+  }
   const now = new Date().toISOString()
   const customer: Customer = {
     ...data,
@@ -41,6 +51,9 @@ export async function createCustomer(data: Omit<Customer, '_id' | 'created_at' |
 }
 
 export async function updateCustomer(id: string, data: Partial<Customer>): Promise<Customer> {
+  if (API_MODE === 'rest') {
+    return apiPut<Customer>(`/customers/${id}`, data)
+  }
   const idx = customers.findIndex(c => c._id === id)
   if (idx === -1) throw new Error('Customer not found')
   customers[idx] = { ...customers[idx], ...data, updated_at: new Date().toISOString() }

@@ -1,0 +1,15 @@
+{
+  "envId": "my-test-env-0gif1eyrbc6d63e1",
+  "region": "ap-shanghai",
+  "functionRoot": "cloud/functions",
+  "functions": [
+    {
+      "name": "api",
+      "runtime": "Nodejs16.13",
+      "handler": "index.main",
+      "timeout": 10,
+      "memorySize": 256,
+      "installDependency": true
+    }
+  ]
+}

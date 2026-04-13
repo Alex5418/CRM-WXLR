@@ -9,7 +9,8 @@ import type { Customer } from '@/types'
 import { CUSTOMER_STATUSES } from '@/types'
 import { getCustomers } from '@/api/customers'
 import { getProjects } from '@/api/projects'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Download } from 'lucide-react'
+import { exportCustomers } from '@/lib/export'
 
 export default function CustomerList() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -33,9 +34,14 @@ export default function CustomerList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">客户管理</h1>
-        <Button size="sm" asChild>
-          <Link to="/customers/new"><Plus className="h-4 w-4 mr-1" />新建客户</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => exportCustomers(customers)}>
+            <Download className="h-4 w-4 mr-1" />导出
+          </Button>
+          <Button size="sm" asChild>
+            <Link to="/customers/new"><Plus className="h-4 w-4 mr-1" />新建客户</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

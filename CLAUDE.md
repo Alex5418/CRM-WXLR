@@ -15,16 +15,22 @@
 ```
 CRM-WXLR/
 ├── CLAUDE.md                 # 本文件
+├── cloudbaserc.json          # CloudBase CLI配置
+├── cloud/                    # CloudBase云函数
+│   └── functions/api/        # 单函数路由分发（6张表CRUD）
+│       ├── index.js
+│       └── package.json
 ├── Docs/
 │   ├── crm-td.md             # 技术设计文档（数据模型、API设计、页面结构、阶段定义）
 │   ├── project-status.md     # 项目状态跟踪
 │   └── 迪士尼合作客户进度表(4).xlsx  # 原始客户数据Excel
 └── web/                      # Web前端（Vite + React）
+    ├── .env                  # VITE_API_MODE=rest|mock（gitignored）
     └── src/
         ├── types/index.ts    # 数据模型 & 枚举常量
-        ├── mock/data.ts      # 从Excel清洗的mock数据（30客户、30项目、15跟进、4合同）
-        ├── api/              # API抽象层（mock↔REST可切换）
-        │   ├── client.ts     # HTTP客户端，通过API_MODE切换mock/rest
+        ├── mock/data.ts      # 从Excel清洗的mock数据（开发回退用）
+        ├── api/              # API抽象层（mock↔REST双模式）
+        │   ├── client.ts     # HTTP客户端，VITE_API_MODE环境变量控制模式
         │   ├── customers.ts
         │   ├── projects.ts
         │   ├── progress-logs.ts
@@ -62,7 +68,8 @@ npm run lint         # ESLint检查
 
 ## 关键设计决策
 
-- **API抽象层**: 所有数据操作通过 `api/*.ts`，修改 `api/client.ts` 中的 `API_MODE` 即可切换mock/真实后端
+- **API抽象层**: 所有数据操作通过 `api/*.ts`，`web/.env` 中 `VITE_API_MODE=rest` 连接CloudBase，`=mock` 使用本地mock数据
+- **CloudBase后端**: 单云函数 `api` 路由分发，覆盖6张表CRUD，HTTP访问地址 `https://my-test-env-0gif1eyrbc6d63e1.service.tcloudbase.com/api`
 - **Mock数据**: 从Excel按TD第7节规则清洗（客户名标准化、负责人拆分、阶段映射）
 - **项目阶段Pipeline**: lead → contacted → sampling → contract_signing → production → live → completed
 - **三种合作模式**: fama（FAMA授权）、joint_dev（联合开发）、oem_cross_border（代工/跨境）

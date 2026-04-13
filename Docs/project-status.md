@@ -1,6 +1,6 @@
 # Disney授权CRM — 项目状态跟踪
 
-> 最后更新: 2026-04-12
+> 最后更新: 2026-04-12 (CloudBase后端接入完成)
 
 ## 当前阶段: Phase 1 — MVP (Web Prototype)
 
@@ -33,13 +33,15 @@
 
 - [ ] 父母注册微信小程序账号（企业主体）+ 提交小程序备案
 - [ ] 购买域名 + 提交ICP备案
-- [ ] CloudBase云开发环境初始化
-- [ ] 云函数开发 (Staff / Customer / Project / ProgressLog CRUD)
+- [x] CloudBase云开发环境初始化（环境ID: my-test-env-0gif1eyrbc6d63e1，上海区）
+- [x] 云函数开发 (Staff / Customer / Project / ProgressLog / Contract / LabelOrder CRUD)
+- [x] 云接入HTTP服务配置（API地址: https://my-test-env-0gif1eyrbc6d63e1.service.tcloudbase.com/api）
+- [x] Mock数据迁移到CloudBase数据库（30客户、30项目、15跟进、4合同、6防伪标、4员工）
+- [x] Web端对接CloudBase HTTP API（替换mock，支持mock/rest双模式切换）
+- [x] Excel导出功能（客户/合同/防伪标导出）
 - [ ] 基础权限控制 (admin / manager / sales / finance)
-- [ ] Excel数据迁移脚本
 - [ ] 微信小程序前端开发
-- [ ] Web端对接CloudBase HTTP API（替换mock）
-- [ ] 部署Web端到Vercel
+- [ ] 部署Web端到Vercel/CloudBase静态托管
 
 ### Phase 2 待办 — 完善 & 多端正式化
 
