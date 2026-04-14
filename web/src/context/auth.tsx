@@ -1,30 +1,47 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 import type { Staff } from '@/types'
-import { mockStaff } from '@/mock/data'
+import { login as apiLogin } from '@/api/auth'
 
-// 1. 定义 context 的类型
-interface AuthContext {
-    currentUser: Staff
+const STORAGE_KEY = 'crm_current_user'
+
+interface AuthContextValue {
+  currentUser: Staff | null
+  login: (staffId: string, pin: string) => Promise<void>
+  logout: () => void
+}
+
+const AuthContext = createContext<AuthContextValue>({} as AuthContextValue)
+
+function loadUser(): Staff | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
   }
+}
 
-  // 2. 创建 context
-const AuthContext = createContext<AuthContext>(
-    {} as AuthContext
-  )
-
-  // 3. Provider — mock 阶段直接用 mockStaff[0]
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const currentUser = mockStaff[0] // 这里可以切换不同的用户来测试权限
-    return (
-      <AuthContext.Provider value={{ currentUser }}>
-        {children}
-      </AuthContext.Provider>
-    )
-  }
+  const [currentUser, setCurrentUser] = useState<Staff | null>(loadUser)
 
-  // 4. 导出 hook
+  const login = useCallback(async (staffId: string, pin: string) => {
+    const user = await apiLogin(staffId, pin)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    setCurrentUser(user)
+  }, [])
+
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY)
+    setCurrentUser(null)
+  }, [])
+
+  return (
+    <AuthContext.Provider value={{ currentUser, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
 export function useAuth() {
-    return useContext(AuthContext)
-  }
-
-  
+  return useContext(AuthContext)
+}

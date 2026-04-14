@@ -1,8 +1,21 @@
 const cloudbase = require('@cloudbase/node-sdk')
+const COS = require('cos-nodejs-sdk-v5')
 
 const app = cloudbase.init({ env: cloudbase.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
+
+// COS config — bucket name from CloudBase storage
+const COS_BUCKET = '6d79-my-test-env-0gif1eyrbc6d63e1-1375988356'
+const COS_REGION = 'ap-shanghai'
+
+function getCOS() {
+  return new COS({
+    SecretId: process.env.TENCENTCLOUD_SECRETID,
+    SecretKey: process.env.TENCENTCLOUD_SECRETKEY,
+    SecurityToken: process.env.TENCENTCLOUD_SESSIONTOKEN,
+  })
+}
 
 // ===== Router =====
 
@@ -26,6 +39,20 @@ exports.main = async (event) => {
     const resource = segments[0]
     const id = segments[1]
 
+    // Auth route: /auth/login
+    if (resource === 'auth' && id === 'login' && method === 'POST') {
+      return await authLogin(body)
+    }
+
+    // File routes: /files/presign, /files/url, /files/delete, /files/setup-cors
+    if (resource === 'files') {
+      if (id === 'presign' && method === 'POST') return await filePresign(body)
+      if (id === 'url' && method === 'POST') return await fileGetURL(body)
+      if (id === 'delete' && method === 'POST') return await fileDelete(body)
+      if (id === 'setup-cors' && method === 'POST') return await fileSetupCORS()
+      return respond(404, { error: 'Unknown file action' })
+    }
+
     const handlers = { customers, projects, contracts, progress_logs, label_orders, staff }
     const handler = handlers[resource]
     if (!handler) return respond(404, { error: `Unknown resource: ${resource}` })
@@ -47,6 +74,99 @@ function respond(status, data, extraHeaders = {}) {
     },
     body: JSON.stringify(data),
   }
+}
+
+// ===== Files =====
+
+async function filePresign(body) {
+  const { cloudPath } = body
+  if (!cloudPath) return respond(400, { error: '缺少 cloudPath' })
+
+  const cos = getCOS()
+  return new Promise((resolve) => {
+    cos.getObjectUrl({
+      Bucket: COS_BUCKET,
+      Region: COS_REGION,
+      Key: cloudPath,
+      Method: 'PUT',
+      Sign: true,
+      Expires: 600, // 10 minutes
+    }, (err, data) => {
+      if (err) {
+        resolve(respond(500, { error: err.message }))
+      } else {
+        // Construct CloudBase fileID
+        const fileID = `cloud://${process.env.TCB_ENV}.${COS_BUCKET}/${cloudPath}`
+        resolve(respond(200, { uploadURL: data.Url, fileID }))
+      }
+    })
+  })
+}
+
+async function fileGetURL(body) {
+  const { fileList } = body
+  if (!fileList || !fileList.length) {
+    return respond(400, { error: '缺少 fileList' })
+  }
+  const res = await app.getTempFileURL({ fileList })
+  return respond(200, { fileList: res.fileList })
+}
+
+async function fileDelete(body) {
+  const { fileList } = body
+  if (!fileList || !fileList.length) {
+    return respond(400, { error: '缺少 fileList' })
+  }
+  await app.deleteFile({ fileList })
+  return respond(200, { deleted: true })
+}
+
+async function fileSetupCORS() {
+  const cos = getCOS()
+  return new Promise((resolve) => {
+    cos.putBucketCors({
+      Bucket: COS_BUCKET,
+      Region: COS_REGION,
+      CORSRules: [{
+        AllowedOrigins: ['*'],
+        AllowedMethods: ['GET', 'PUT', 'POST', 'HEAD'],
+        AllowedHeaders: ['*'],
+        MaxAgeSeconds: 86400,
+      }],
+    }, (err) => {
+      if (err) {
+        resolve(respond(500, { error: err.message }))
+      } else {
+        resolve(respond(200, { success: true, message: 'CORS configured' }))
+      }
+    })
+  })
+}
+
+// ===== Helpers =====
+
+function stripPin(staff) {
+  const { pin, ...rest } = staff
+  return rest
+}
+
+// ===== Auth =====
+
+async function authLogin(body) {
+  const { staff_id, pin } = body
+  if (!staff_id || !pin) {
+    return respond(400, { error: '请输入员工和PIN码' })
+  }
+
+  const { data } = await db.collection('staff').doc(staff_id).get()
+  const user = data[0]
+  if (!user) return respond(404, { error: '员工不存在' })
+  if (!user.is_active) return respond(403, { error: '该账号已停用' })
+  if (user.pin !== pin) return respond(401, { error: 'PIN码错误' })
+
+  // Return staff info without pin
+  const { pin: _pin, ...safeUser } = user
+  return respond(200, safeUser)
 }
 
 // ===== Customers =====
@@ -221,12 +341,12 @@ async function staff(method, id, body, query) {
 
   if (method === 'GET' && !id) {
     const { data } = await col.limit(100).get()
-    return respond(200, data)
+    return respond(200, data.map(stripPin))
   }
 
   if (method === 'GET' && id) {
     const { data } = await col.doc(id).get()
-    return respond(200, data[0] || null)
+    return respond(200, data[0] ? stripPin(data[0]) : null)
   }
 
   if (method === 'POST') {
@@ -262,6 +382,17 @@ async function label_orders(method, id, body, query) {
     const doc = { ...body, total_amount, created_at: now }
     const { id: newId } = await col.add(doc)
     return respond(201, { _id: newId, ...doc })
+  }
+
+  if (method === 'PUT' && id) {
+    const total_amount = (body.unit_price || 0) * (body.quantity || 0)
+    await col.doc(id).update({ ...body, total_amount })
+    return respond(200, { _id: id, ...body, total_amount })
+  }
+
+  if (method === 'DELETE' && id) {
+    await col.doc(id).remove()
+    return respond(200, { deleted: true })
   }
 
   return respond(405, { error: 'Method not allowed' })

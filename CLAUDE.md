@@ -89,3 +89,4 @@ npm run lint         # ESLint检查
 - Windows开发环境，Vite监听端口可能受Hyper-V保留端口影响，用 `--port 8888` 等非保留端口
 - 数据模型中 `（待补全）` 标记的客户名需与业务方确认真实公司名
 - 暗色模式已通过CSS `prefers-color-scheme` 支持
+

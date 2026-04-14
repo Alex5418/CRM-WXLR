@@ -1,6 +1,6 @@
 # Disney授权CRM — 项目状态跟踪
 
-> 最后更新: 2026-04-12 (CloudBase后端接入完成)
+> 最后更新: 2026-04-13 (登录系统 + 合同PDF上传 + Web端部署)
 
 ## 当前阶段: Phase 1 — MVP (Web Prototype)
 
@@ -18,7 +18,7 @@
 - [x] 合同列表 (按到期排序 + 即将到期预警)
 - [x] 响应式布局 (桌面侧边栏 + 移动端抽屉菜单)
 - [x] 暗色模式支持
-- [x] 防伪标管理 (LabelOrder数据模型 + API + 客户详情页购买记录展示/新增)
+- [x] 防伪标管理 (LabelOrder数据模型 + API + 客户详情页购买记录展示/新增/编辑/删除)
 - [x] 客户合作品类 (Customer新增product_categories字段 + 详情展示 + 表单编辑)
 - [x] 新增 `finance`（财务）角色
 - [x] 前端权限框架 (AuthContext + AuthProvider + useAuth hook，mock登录态)
@@ -39,9 +39,9 @@
 - [x] Mock数据迁移到CloudBase数据库（30客户、30项目、15跟进、4合同、6防伪标、4员工）
 - [x] Web端对接CloudBase HTTP API（替换mock，支持mock/rest双模式切换）
 - [x] Excel导出功能（客户/合同/防伪标导出）
-- [ ] 基础权限控制 (admin / manager / sales / finance)
+- [x] 基础权限控制 — PIN码登录 + 路由保护 + 侧边栏用户信息/登出
+- [x] 部署Web端到CloudBase静态托管（https://my-test-env-0gif1eyrbc6d63e1-1375988356.tcloudbaseapp.com）
 - [ ] 微信小程序前端开发
-- [ ] 部署Web端到Vercel/CloudBase静态托管
 
 ### Phase 2 待办 — 完善 & 多端正式化
 
@@ -49,7 +49,7 @@
 - [x] 防伪标管理：客户维度的购买记录（单价、数量、金额、历史查询）
 - [x] 客户合作品类：客户页面展示主营类目（自由填写）
 - [x] 合同权限控制：合同仅对关联业务员+财务+管理层可见
-- [ ] 合同PDF上传：支持上传合同PDF附件到云存储
+- [x] 合同PDF上传：COS预签名URL直传 + 合同页面上传/查看/删除
 - [x] 新增 `finance`（财务）角色
 
 **原有待办**：

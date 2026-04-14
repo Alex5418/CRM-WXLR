@@ -1,7 +1,9 @@
 import { Link, useLocation, Outlet } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Users, FolderKanban, FileText, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, FolderKanban, FileText, Menu, X, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '@/context/auth'
+import { STAFF_ROLES } from '@/types'
 
 const navItems = [
   { to: '/', label: '首页看板', icon: LayoutDashboard },
@@ -13,6 +15,7 @@ const navItems = [
 export default function Layout() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { currentUser, logout } = useAuth()
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,6 +60,23 @@ export default function Layout() {
               )
             })}
           </nav>
+          {currentUser && (
+            <div className="absolute bottom-0 left-0 right-0 border-t p-3">
+              <div className="flex items-center justify-between px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{currentUser.name}</p>
+                  <p className="text-xs text-muted-foreground">{STAFF_ROLES[currentUser.role]}</p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  title="退出登录"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* Overlay for mobile */}

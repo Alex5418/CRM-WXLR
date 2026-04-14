@@ -9,10 +9,10 @@ import { CUSTOMER_STATUSES, STAGES, BIZ_TYPES, STAGE_COLORS } from '@/types'
 import { getCustomer } from '@/api/customers'
 import { getProjects } from '@/api/projects'
 import { getCustomerLogs } from '@/api/progress-logs'
-import { getCustomerLabelOrders, createLabelOrder } from '@/api/label-orders'
+import { getCustomerLabelOrders, createLabelOrder, updateLabelOrder, deleteLabelOrder } from '@/api/label-orders'
 import { getStaffName } from '@/api/staff'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus, Download } from 'lucide-react'
+import { ArrowLeft, Edit, FolderKanban, ShieldCheck, Plus, Download, Pencil, Trash2 } from 'lucide-react'
 import { exportLabelOrders } from '@/lib/export'
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
@@ -21,6 +21,7 @@ export default function CustomerDetail() {
   const [logs, setLogs] = useState<ProgressLog[]>([])
   const [labelOrders, setLabelOrders] = useState<LabelOrder[]>([])
   const [showLabelForm, setShowLabelForm] = useState(false)
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null)
   const [labelForm, setLabelForm] = useState({ unit_price: '', quantity: '', order_date: '', notes: '' })
 
   const loadLabelOrders = () => {
@@ -35,18 +36,45 @@ export default function CustomerDetail() {
     loadLabelOrders()
   }, [id])
 
-  const handleAddLabelOrder = async () => {
+  const resetLabelForm = () => {
+    setLabelForm({ unit_price: '', quantity: '', order_date: '', notes: '' })
+    setShowLabelForm(false)
+    setEditingOrderId(null)
+  }
+
+  const handleSaveLabelOrder = async () => {
     if (!id || !labelForm.unit_price || !labelForm.quantity || !labelForm.order_date) return
-    await createLabelOrder({
+    const data = {
       customer_id: id,
       unit_price: parseFloat(labelForm.unit_price),
       quantity: parseInt(labelForm.quantity),
       order_date: labelForm.order_date,
       staff_id: 's1',
       notes: labelForm.notes || undefined,
+    }
+    if (editingOrderId) {
+      await updateLabelOrder(editingOrderId, data)
+    } else {
+      await createLabelOrder(data)
+    }
+    resetLabelForm()
+    loadLabelOrders()
+  }
+
+  const handleEditLabelOrder = (order: LabelOrder) => {
+    setEditingOrderId(order._id)
+    setLabelForm({
+      unit_price: String(order.unit_price),
+      quantity: String(order.quantity),
+      order_date: order.order_date,
+      notes: order.notes || '',
     })
-    setLabelForm({ unit_price: '', quantity: '', order_date: '', notes: '' })
-    setShowLabelForm(false)
+    setShowLabelForm(true)
+  }
+
+  const handleDeleteLabelOrder = async (orderId: string) => {
+    if (!confirm('确定删除这条记录？')) return
+    await deleteLabelOrder(orderId)
     loadLabelOrders()
   }
 
@@ -158,7 +186,7 @@ export default function CustomerDetail() {
                   <Download className="h-4 w-4 mr-1" />导出
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={() => setShowLabelForm(!showLabelForm)}>
+              <Button size="sm" variant="outline" onClick={() => { resetLabelForm(); setShowLabelForm(true) }}>
                 <Plus className="h-4 w-4 mr-1" />新增订单
               </Button>
             </div>
@@ -212,10 +240,10 @@ export default function CustomerDetail() {
                 </p>
               )}
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleAddLabelOrder} disabled={!labelForm.unit_price || !labelForm.quantity || !labelForm.order_date}>
-                  保存
+                <Button size="sm" onClick={handleSaveLabelOrder} disabled={!labelForm.unit_price || !labelForm.quantity || !labelForm.order_date}>
+                  {editingOrderId ? '更新' : '保存'}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setShowLabelForm(false); setLabelForm({ unit_price: '', quantity: '', order_date: '', notes: '' }) }}>
+                <Button size="sm" variant="ghost" onClick={resetLabelForm}>
                   取消
                 </Button>
               </div>
@@ -223,15 +251,16 @@ export default function CustomerDetail() {
           )}
           {labelOrders.length > 0 ? (
             <div className="space-y-2">
-              <div className="grid grid-cols-5 gap-2 text-xs text-muted-foreground font-medium px-3 py-1">
+              <div className="grid grid-cols-[1fr_0.8fr_0.8fr_1fr_1fr_auto] gap-2 text-xs text-muted-foreground font-medium px-3 py-1">
                 <span>日期</span>
                 <span className="text-right">单价</span>
                 <span className="text-right">数量</span>
                 <span className="text-right">金额</span>
                 <span>经办人</span>
+                <span className="w-14"></span>
               </div>
               {labelOrders.map(o => (
-                <div key={o._id} className="grid grid-cols-5 gap-2 text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors">
+                <div key={o._id} className="grid grid-cols-[1fr_0.8fr_0.8fr_1fr_1fr_auto] gap-2 text-sm px-3 py-2 rounded-lg hover:bg-muted transition-colors items-center">
                   <span>{formatDate(o.order_date)}</span>
                   <span className="text-right">¥{o.unit_price}</span>
                   <span className="text-right">{o.quantity.toLocaleString()}</span>
@@ -239,6 +268,22 @@ export default function CustomerDetail() {
                   <div>
                     <span>{getStaffName(o.staff_id)}</span>
                     {o.notes && <p className="text-xs text-muted-foreground">{o.notes}</p>}
+                  </div>
+                  <div className="flex gap-1 w-14 justify-end">
+                    <button
+                      onClick={() => handleEditLabelOrder(o)}
+                      className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                      title="编辑"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteLabelOrder(o._id)}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}

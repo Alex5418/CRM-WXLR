@@ -1,5 +1,5 @@
 import type { Contract } from '@/types'
-import { API_MODE, apiGet, apiPost } from './client'
+import { API_MODE, apiGet, apiPost, apiPut } from './client'
 import { mockContracts } from '@/mock/data'
 
 let contracts = [...mockContracts]
@@ -48,4 +48,14 @@ export async function createContract(data: Omit<Contract, '_id' | 'created_at'>)
   }
   contracts.unshift(contract)
   return contract
+}
+
+export async function updateContract(id: string, data: Partial<Contract>): Promise<Contract> {
+  if (API_MODE === 'rest') {
+    return apiPut<Contract>(`/contracts/${id}`, data)
+  }
+  const idx = contracts.findIndex(c => c._id === id)
+  if (idx === -1) throw new Error('合同不存在')
+  contracts[idx] = { ...contracts[idx], ...data }
+  return contracts[idx]
 }
